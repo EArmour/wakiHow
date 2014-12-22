@@ -1,0 +1,35 @@
+<html>
+<head>
+    <title>wakiHow</title>
+     <link rel="stylesheet" type="text/css" href="static/style.css">
+</head>
+<body>
+<div id="container">
+    <div id="article_shell">
+        <div id="article">
+            <div id="bodycontents">
+                <div id="intro">
+                    <h1 class="firstHeading">
+                        How to Do Nothing, from wikiHow!
+                    </h1>
+                </div>
+
+
+                <div id="steps" class="section_text">
+                    <ol class="steps_list_2">
+                        {% autoescape false %}
+                        {% for step in steps %}
+                            {{ step }}
+                        {% endfor %}
+                        {% endautoescape %}
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="sidebar">
+        Stuff here?
+    </div>
+</div>
+</body>
+</html>
