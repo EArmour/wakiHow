@@ -3113,7 +3113,7 @@ input[type=checkbox].css-checkbox:checked+label.css-checkbox-label{
 }
 
 .css-checkbox-label{
-	background-image:url(/skins/owl/images/article_sprite.png)
+	background-image:url(/static/article_sprite.png)
 }
 
 .fading{

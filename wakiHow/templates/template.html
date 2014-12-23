@@ -13,8 +13,20 @@
                         How to Do Nothing, from wikiHow!
                     </h1>
                 </div>
-
-
+                {% if needs_exist %}
+                <div class="section thingsyoullneed">
+                    <h2 class=""><span class="mw-headline" id="Things_You.27ll_Need">Things You'll Need</span></h2>
+                    <div id="thingsyoullneed" class="section_text">
+                        <ul>
+                            {% autoescape false %}
+                            {% for needed in needs %}
+                                {{ needed }}
+                            {% endfor %}
+                            {% endautoescape %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
                 <div id="steps" class="section_text">
                     <ol class="steps_list_2">
                         {% autoescape false %}
@@ -28,7 +40,10 @@
         </div>
     </div>
     <div id="sidebar">
-        Stuff here?
+        <div class="sidebox">
+            <p>Hacked into being by <a href="http://www.twitter.com/Hargrimm">Evan Armour</a>.</p>
+            <p>Source available <a href="https://github.com/EArmour/wakiHow">on GitHub</a>.</p>
+        </div>
     </div>
 </div>
 </body>

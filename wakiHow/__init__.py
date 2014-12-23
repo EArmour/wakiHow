@@ -7,40 +7,64 @@ app = Flask(__name__)
 
 @app.route('/')
 def disp():
-    steps = get_steps()
-    return render_template('template.html', steps = steps)
+    step_count = 3
+    need_count = int(step_count * 1.5)
 
-def get_steps(num = 3, brevity = True):
-    steps = [None] * num
+    steps = [None] * step_count
+    needs = [None] * need_count
 
-    for i in range(0, num):
-        #Get random wikiHow page using their own Random Page feature
-        page = bs4(requests.get("http://www.wikihow.com/Special:Randomizer").text)
-        """:type : bs4.BeautifulSoup"""
+    for i in range(0, step_count):
+        page = get_page()
+        steps[i] = get_step(page, i)
 
-        app.logger.debug("Getting page " + str(i) + ": " + page.find("link", {"rel": "canonical"})['href'])
-        stepsection = page.find("div", {"id": "steps"})
-        if stepsection: # Only one 'method'
-            allsteps = stepsection.find("ol").findChildren("li", recursive = False)
-        else: # Multiple 'methods', each with their own list of steps
-            app.logger.debug("Multiple methods on page, searching for one with list items.")
-            for x in range(1, 5):
+    for i in range(0, need_count):
+        page = get_page()
+        needs[i] = get_need(page)
+
+    return render_template('template.html', steps = steps, needs = needs, needs_exist = not all(x is None for x in
+                                                                                                needs))
+
+def get_page():
+    #Get random wikiHow page using their own Random Page feature
+    page = bs4(requests.get("http://www.wikihow.com/Special:Randomizer").text)
+    """:type : bs4.BeautifulSoup"""
+
+    app.logger.debug("Getting page: " + page.find("link", {"rel": "canonical"})['href'])
+
+    return page
+
+def get_need(page):
+    needsection = page.find("div", {"id": "thingsyoullneed"})
+    if needsection:
+        allneeds = needsection.find("ul").findChildren("li", recursive = False)
+    else:
+        app.logger.debug("No materials listed for this how-to.")
+        return ""
+
+    return allneeds[random.randint(0, len(allneeds) - 1)]
+
+
+def get_step(page, num, brevity = True):
+    stepsection = page.find("div", {"id": "steps"})
+    if stepsection: # Only one 'method'
+        allsteps = stepsection.find("ol").findChildren("li", recursive = False)
+    else: # Multiple 'methods', each with their own list of steps
+        app.logger.debug("Multiple methods on page, searching for one with list items.")
+        for x in range(1, 5):
+            try:
+                stepsection  = page.find("div", {"id": "steps_%d" % x})
                 try:
-                    stepsection  = page.find("div", {"id": "steps_%d" % x})
-                    try:
-                        # Possible for a Method to have no actual steps, just a paragraph, so check for the list
-                        allsteps = stepsection.find("ol").findChildren("li", recursive = False)
-                        app.logger.debug("Found list items under Method %d" % x)
-                        break
-                    except:
-                        continue
-                except:
-                    app.logger.debug("Failed to find a list section")
+                    # Possible for a Method to have no actual steps, just a paragraph, so check for the list
+                    allsteps = stepsection.find("ol").findChildren("li", recursive = False)
+                    app.logger.debug("Found list items under Method %d" % x)
                     break
+                except:
+                    continue
+            except:
+                app.logger.debug("Failed to find a list section")
+                break
 
-        steps[i] = process_step(allsteps, i, brevity)
-
-    return steps
+    return process_step(allsteps, num, brevity)
 
 def process_step(allsteps, stepnum, brevity):
     step = get_rand_step(allsteps)
