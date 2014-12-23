@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import requests
 from bs4 import BeautifulSoup as bs4
 import random
@@ -6,19 +6,28 @@ import random
 app = Flask(__name__)
 
 @app.route('/')
-def disp():
-    step_count = 3
+def main():
+    return display()
+
+@app.route('/display', methods = ['POST', 'GET'])
+def display():
+    if request.method == "POST":
+        step_count = int(request.form['count'])
+    else:
+        step_count = 3
 
     steps = []
     needs = []
+    warnings = []
 
     for i in range(0, step_count):
         page = get_page()
         steps.append(get_step(page, i))
         needs.extend(get_needs(page))
+        warnings.extend(get_warnings(page))
 
-    return render_template('template.html', steps = steps, needs = needs, needs_exist = not all(x is None for x in
-                                                                                                needs))
+    return render_template('template.html', steps = steps, needs = needs, warnings = warnings, needs_exist = not all(
+        x is None for x in needs), warnings_exist = not all(y is None for y in warnings))
 
 def get_page():
     #Get random wikiHow page using their own Random Page feature
@@ -47,8 +56,25 @@ def get_needs(page):
 
     return needs
 
+def get_warnings(page):
+    warningsection = page.find("div", {"id": "warnings"})
+    if warningsection:
+        allwarnings = warningsection.find("ul").findChildren("li", recursive = False)
+    else:
+        app.logger.debug("No warnings listed for this how-to.")
+        return ""
 
-def get_step(page, num, brevity = True):
+    warnings = []
+    count = len(allwarnings)
+    count = count if count < 3 else 3
+
+    for i in xrange(0, random.randint(1, count)):
+        warnings.append(allwarnings[random.randint(0, len(allwarnings) - 1)])
+        allwarnings.remove(warnings[i])
+
+    return warnings
+
+def get_step(page, num):
     stepsection = page.find("div", {"id": "steps"})
     if stepsection: # Only one 'method'
         allsteps = stepsection.find("ol").findChildren("li", recursive = False)
@@ -68,9 +94,9 @@ def get_step(page, num, brevity = True):
                 app.logger.debug("Failed to find a list section")
                 break
 
-    return process_step(allsteps, num, brevity)
+    return process_step(allsteps, num)
 
-def process_step(allsteps, stepnum, brevity):
+def process_step(allsteps, stepnum):
     step = get_rand_step(allsteps)
 
     while step.find("img") is None:

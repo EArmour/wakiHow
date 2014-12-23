@@ -1,7 +1,7 @@
 <html>
 <head>
     <title>wakiHow</title>
-     <link rel="stylesheet" type="text/css" href="static/style.css">
+    <link rel="stylesheet" type="text/css" href="static/style.css">
 </head>
 <body>
 <div id="container">
@@ -27,15 +27,31 @@
                     </div>
                 </div>
                 {% endif %}
-                <div id="steps" class="section_text">
-                    <ol class="steps_list_2">
-                        {% autoescape false %}
-                        {% for step in steps %}
-                            {{ step }}
-                        {% endfor %}
-                        {% endautoescape %}
-                    </ol>
+                <div class="section steps sticky">
+                    <div id="steps" class="section_text">
+                        <ol class="steps_list_2">
+                            {% autoescape false %}
+                            {% for step in steps %}
+                                {{ step }}
+                            {% endfor %}
+                            {% endautoescape %}
+                        </ol>
+                    </div>
                 </div>
+                {% if warnings_exist %}
+                <div class="section warnings sticky">
+                    <h2 class=""><span class="mw-headline" id="Warnings">Warnings</span></h2>
+                    <div id="warnings" class="section_text">
+                        <ul>
+                            {% autoescape false %}
+                            {% for warning in warnings %}
+                                {{ warning }}
+                            {% endfor %}
+                            {% endautoescape %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -43,6 +59,20 @@
         <div class="sidebox">
             <p>Hacked into being by <a href="http://www.twitter.com/Hargrimm">Evan Armour</a>.</p>
             <p>Source available <a href="https://github.com/EArmour/wakiHow">on GitHub</a>.</p>
+        </div>
+        <div class="sidebox">
+            <form action="{{ url_for('display') }}" method="post">
+                <select name="count">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="7">7</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <input type="submit" value="Go!"/>
+            </form>
         </div>
     </div>
 </div>
