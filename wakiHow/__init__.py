@@ -8,18 +8,14 @@ app = Flask(__name__)
 @app.route('/')
 def disp():
     step_count = 3
-    need_count = int(step_count * 1.5)
 
-    steps = [None] * step_count
-    needs = [None] * need_count
+    steps = []
+    needs = []
 
     for i in range(0, step_count):
         page = get_page()
-        steps[i] = get_step(page, i)
-
-    for i in range(0, need_count):
-        page = get_page()
-        needs[i] = get_need(page)
+        steps.append(get_step(page, i))
+        needs.extend(get_needs(page))
 
     return render_template('template.html', steps = steps, needs = needs, needs_exist = not all(x is None for x in
                                                                                                 needs))
@@ -33,7 +29,7 @@ def get_page():
 
     return page
 
-def get_need(page):
+def get_needs(page):
     needsection = page.find("div", {"id": "thingsyoullneed"})
     if needsection:
         allneeds = needsection.find("ul").findChildren("li", recursive = False)
@@ -41,7 +37,15 @@ def get_need(page):
         app.logger.debug("No materials listed for this how-to.")
         return ""
 
-    return allneeds[random.randint(0, len(allneeds) - 1)]
+    needs = []
+    count = len(allneeds)
+    count = count if count < 3 else 3
+
+    for i in xrange(0, random.randint(1, count)):
+        needs.append(allneeds[random.randint(0, len(allneeds) - 1)])
+        allneeds.remove(needs[i])
+
+    return needs
 
 
 def get_step(page, num, brevity = True):
