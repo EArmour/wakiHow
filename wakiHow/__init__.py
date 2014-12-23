@@ -1,7 +1,11 @@
 from flask import Flask, render_template, request
-import requests
 from bs4 import BeautifulSoup as bs4
-import random
+import requests, random
+
+WIMMY_DIDDLE = """<li>
+<div class="mwimg  largeimage  floatcenter " style="max-width:670px"><img alt="Whittle a Wimmy Diddle Step 10.jpg" src="http://pad1.whstatic.com/images/thumb/e/e2/Whittle-a-Wimmy-Diddle-Step-10.jpg/670px-Whittle-a-Wimmy-Diddle-Step-10.jpg" width="670" height="503"></div>
+<div class="step_num">%d</div><b class="whb">Make sure you can spin the propeller.</b>
+</li>"""
 
 app = Flask(__name__)
 
@@ -21,18 +25,24 @@ def display():
     warnings = []
 
     for i in range(0, step_count):
-        page = get_page()
-        steps.append(get_step(page, i))
-        needs.extend(get_needs(page))
-        warnings.extend(get_warnings(page))
+        try:
+            page = get_page()
+            steps.append(get_step(page, i))
+            needs.extend(get_needs(page))
+            warnings.extend(get_warnings(page))
+        except: #Failed for some reason, emergency wimmy diddle step placeholder
+            app.logger.error("Failed to retrieve info from page #%d" % i)
+            steps.append(WIMMY_DIDDLE % i)
 
     return render_template('template.html', steps = steps, needs = needs, warnings = warnings, needs_exist = not all(
         x is None for x in needs), warnings_exist = not all(y is None for y in warnings))
 
 def get_page():
     #Get random wikiHow page using their own Random Page feature
-    page = bs4(requests.get("http://www.wikihow.com/Special:Randomizer").text)
-    """:type : bs4.BeautifulSoup"""
+    page = None
+
+    while not page:
+        page = bs4(requests.get("http://www.wikihow.com/Special:Randomizer").text)
 
     app.logger.debug("Getting page: " + page.find("link", {"rel": "canonical"})['href'])
 
@@ -48,7 +58,7 @@ def get_needs(page):
 
     needs = []
     count = len(allneeds)
-    count = count if count < 3 else 3
+    count = count if count < 2 else 2
 
     for i in xrange(0, random.randint(1, count)):
         needs.append(allneeds[random.randint(0, len(allneeds) - 1)])
@@ -91,7 +101,7 @@ def get_step(page, num):
                 except:
                     continue
             except:
-                app.logger.debug("Failed to find a list section")
+                app.logger.debug("Failed to find any list section")
                 break
 
     return process_step(allsteps, num)
