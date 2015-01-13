@@ -23,6 +23,7 @@ def display():
     steps = []
     needs = []
     warnings = []
+    sources = []
 
     for i in range(0, step_count):
         try:
@@ -30,12 +31,13 @@ def display():
             steps.append(get_step(page, i))
             needs.extend(get_needs(page))
             warnings.extend(get_warnings(page))
+            sources.append(get_source(page))
         except: #Failed for some reason, emergency wimmy diddle step placeholder
             app.logger.error("Failed to retrieve info from page #%d" % i)
             steps.append(WIMMY_DIDDLE % i)
 
     return render_template('template.html', steps = steps, needs = needs, warnings = warnings, needs_exist = not all(
-        x is None for x in needs), warnings_exist = not all(y is None for y in warnings))
+        x is None for x in needs), warnings_exist = not all(y is None for y in warnings), sources = sources)
 
 def get_page():
     #Get random wikiHow page using their own Random Page feature
@@ -105,6 +107,11 @@ def get_step(page, num):
                 break
 
     return process_step(allsteps, num)
+
+def get_source(page):
+    link = page.find("h1", {"class": "firstHeading"}).a
+
+    return "<li>" + str(link) + "</li>"
 
 def process_step(allsteps, stepnum):
     step = get_rand_step(allsteps)

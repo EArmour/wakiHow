@@ -53,6 +53,20 @@
                     </div>
                 </div>
                 {% endif %}
+                <div class="section sticky">
+                    <h2><span class="mw-headline">Credits</span></h2>
+                    <div class="section_text">
+                        Text and images from <a href="http://www.wikihow.com/Main-Page">WikiHow</a>, licensed under
+                        <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons BY-NC-SA</a>:
+                        <ol>
+                            {% autoescape false %}
+                            {% for source in sources %}
+                                {{ source }}
+                            {% endfor %}
+                            {% endautoescape %}
+                        </ol>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
