@@ -153,7 +153,7 @@ if __name__ == '__main__':
             FOREIGN KEY(source) REFERENCES urls(id)
         )""")
 
-        for i in range(0, 50):
+        for i in range(0, 100):
             page = get_page()
             source = get_source(page)
 
