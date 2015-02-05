@@ -72,10 +72,11 @@
     </div>
     <div id="sidebar">
         <div class="sidebox">
-            <p>Hacked into being by <a href="http://www.twitter.com/Hargrimm">Evan Armour</a>.</p>
+            <p>A dumb thing by <a href="http://www.twitter.com/Hargrimm">Evan Armour</a>.</p>
             <p>Source available <a href="https://github.com/EArmour/wakiHow">on GitHub</a>.</p>
         </div>
         <div class="sidebox">
+            How many steps?
             <form action="{{ url_for('display') }}" method="post">
                 <select name="count">
                     <option value="2">2</option>
@@ -84,7 +85,6 @@
                     <option value="5">5</option>
                     <option value="7">7</option>
                     <option value="9">9</option>
-                    <option value="10">10</option>
                 </select>
                 <input type="submit" value="Go!"/>
             </form>

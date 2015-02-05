@@ -36,6 +36,7 @@ def display():
             app.logger.error("Failed to retrieve info from page #%d" % i)
             steps.append(WIMMY_DIDDLE % i)
 
+
     return render_template('template.html', steps = steps, needs = needs, warnings = warnings, needs_exist = not all(
         x is None for x in needs), warnings_exist = not all(y is None for y in warnings), sources = sources)
 
@@ -86,6 +87,11 @@ def get_warnings(page):
 
     return warnings
 
+def get_source(page):
+    link = page.find("h1", {"class": "firstHeading"}).a
+
+    return "<li>" + str(link) + "</li>"
+
 def get_step(page, num):
     stepsection = page.find("div", {"id": "steps"})
     if stepsection: # Only one 'method'
@@ -107,11 +113,6 @@ def get_step(page, num):
                 break
 
     return process_step(allsteps, num)
-
-def get_source(page):
-    link = page.find("h1", {"class": "firstHeading"}).a
-
-    return "<li>" + str(link) + "</li>"
 
 def process_step(allsteps, stepnum):
     step = get_rand_step(allsteps)
