@@ -36,7 +36,7 @@ def get_needs(page):
     # If we grab all materials, the pool will be mostly recipe ingredients since they have so many.
     # So, only grab a few from each to maximize variability.
     for i in xrange(0, count):
-        needs.append(allneeds[random.randint(0, len(allneeds) - 1)])
+        needs.append(random.choice(allneeds))
         allneeds.remove(needs[i])
 
     return needs
@@ -55,7 +55,7 @@ def get_warnings(page):
 
     # Again, only grab a limited number from each page to promote variety
     for i in xrange(0, count):
-        warnings.append(allwarnings[random.randint(0, len(allwarnings) - 1)])
+        warnings.append(random.choice(allwarnings))
         allwarnings.remove(warnings[i])
 
     return warnings
@@ -105,11 +105,11 @@ def process_step(step):
     return {'boldtext': unicode(boldtext), 'number': int(num.text), 'html': html}
 
 def get_rand_step(steplist):
-    return steplist[random.randint(0, len(steplist) - 1)]
+    return random.choice(steplist)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    dupecount = 0
+    dupecount, exceptcount = 0, 0
 
     with sqlite3.connect("static/wh.db") as db:
         c = db.cursor()
@@ -153,54 +153,59 @@ if __name__ == '__main__':
             FOREIGN KEY(source) REFERENCES urls(id)
         )""")
 
-        for i in range(0, 100):
-            page = get_page()
-            source = get_source(page)
+        for i in range(0, 250):
+            try:
+                page = get_page()
+                source = get_source(page)
 
-            c.execute("SELECT * FROM urls WHERE url=?", (source['link'],))
+                c.execute("SELECT * FROM urls WHERE url=?", (source['link'],))
 
-            if c.fetchone():
-                dupecount += 1
-                logging.info("Duplicate page fetched, skipping.")
-            else:
-                c.execute("""
-                INSERT INTO urls (url, title)
-                VALUES (?, ?)
-                """, (source['link'], source['title']))
-
-                sourceid = int(c.lastrowid)
-                logging.info("Inserted url ID: %d" % sourceid)
-
-                needs = get_needs(page)
-                for need in needs:
+                if c.fetchone():
+                    dupecount += 1
+                    logging.info("Duplicate page fetched, skipping.")
+                else:
                     c.execute("""
-                    INSERT INTO materials (source, html)
+                    INSERT INTO urls (url, title)
                     VALUES (?, ?)
-                    """, (sourceid, unicode(need)))
+                    """, (source['link'], source['title']))
 
-                warnings = get_warnings(page)
-                for warning in warnings:
-                    c.execute("""
-                    INSERT INTO warnings (source, html)
-                    VALUES (?, ?)
-                    """, (sourceid, unicode(warning)))
+                    sourceid = int(c.lastrowid)
+                    logging.info("Inserted url ID: %d" % sourceid)
 
-                steps = get_steps(page)
-                for step in steps:
-                    img = process_img(step)
-                    if img:
+                    needs = get_needs(page)
+                    for need in needs:
                         c.execute("""
-                        INSERT INTO images (source, html)
+                        INSERT INTO materials (source, html)
                         VALUES (?, ?)
-                        """, (sourceid, unicode(img)))
-                        imgid = int(c.lastrowid)
-                    else:
-                        imgid = None
+                        """, (sourceid, unicode(need)))
 
-                    proc = process_step(step)
-                    c.execute("""
-                    INSERT INTO steps (source, html, boldtext, number, imgid)
-                    VALUES (?, ?, ?, ?, ?)
-                    """, (sourceid, proc['html'], proc['boldtext'], proc['number'], imgid))
-                db.commit()
-        logging.info("DONE. Found %d duplicates." % dupecount)
+                    warnings = get_warnings(page)
+                    for warning in warnings:
+                        c.execute("""
+                        INSERT INTO warnings (source, html)
+                        VALUES (?, ?)
+                        """, (sourceid, unicode(warning)))
+
+                    steps = get_steps(page)
+                    for step in steps:
+                        img = process_img(step)
+                        if img:
+                            c.execute("""
+                            INSERT INTO images (source, html)
+                            VALUES (?, ?)
+                            """, (sourceid, unicode(img)))
+                            imgid = int(c.lastrowid)
+                        else:
+                            imgid = None
+
+                        proc = process_step(step)
+                        c.execute("""
+                        INSERT INTO steps (source, html, boldtext, number, imgid)
+                        VALUES (?, ?, ?, ?, ?)
+                        """, (sourceid, proc['html'], proc['boldtext'], proc['number'], imgid))
+                    db.commit()
+            except Exception as e:
+                logging.error(e.message)
+                exceptcount += 1
+
+        logging.info("DONE. Found %d duplicates, %d errors." % (dupecount, exceptcount))
