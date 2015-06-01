@@ -19,11 +19,9 @@
                     <h2 class=""><span class="mw-headline" id="Things_You.27ll_Need">Things You'll Need</span></h2>
                     <div id="thingsyoullneed" class="section_text">
                         <ul>
-                            {% autoescape false %}
                             {% for needed in needs %}
                                 {{ needed }}
                             {% endfor %}
-                            {% endautoescape %}
                         </ul>
                     </div>
                 </div>
@@ -31,11 +29,9 @@
                 <div class="section steps sticky">
                     <div id="steps" class="section_text">
                         <ol class="steps_list_2">
-                            {% autoescape false %}
                             {% for step in steps %}
                                 {{ step }}
                             {% endfor %}
-                            {% endautoescape %}
                         </ol>
                     </div>
                 </div>
@@ -44,11 +40,9 @@
                     <h2 class=""><span class="mw-headline" id="Warnings">Warnings</span></h2>
                     <div id="warnings" class="section_text">
                         <ul>
-                            {% autoescape false %}
                             {% for warning in warnings %}
                                 {{ warning }}
                             {% endfor %}
-                            {% endautoescape %}
                         </ul>
                     </div>
                 </div>
@@ -59,11 +53,9 @@
                         Text and images from <a href="http://www.wikihow.com/Main-Page">WikiHow</a>, licensed under
                         <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons BY-NC-SA</a>:
                         <ol>
-                            {% autoescape false %}
                             {% for source in sources %}
                                 {{ source }}
                             {% endfor %}
-                            {% endautoescape %}
                         </ol>
                     </div>
                 </div>
